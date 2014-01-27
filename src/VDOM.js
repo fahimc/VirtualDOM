@@ -78,8 +78,9 @@ var vdocument = (function() {
 				}
 
 				if (styles.length > 0 && elem) {
+				    var elem_style=elem.style;
 					for (var s = 0; s < styles.length; s++) {
-						elem.style[styles[s].name] = styles[s].value;
+						elem_style[styles[s].name] = styles[s].value;
 
 					}
 				}
@@ -116,7 +117,18 @@ var vdocument = (function() {
 
 			return new Element(elem);
 		},
-
+        querySelector:function(value){
+            return this._dom.querySelector(value);
+        },
+        querySelectorAll:function(value){
+            return this._dom.querySelectorAll(value);
+        },
+        getElementsByName:function(value){
+            return this._dom.getElementsByName(value);
+        },
+        getElementsByTagNameNS:function(value){
+            return this._dom.getElementsByTagNameNS(value);
+        },
 		update : function(elem, type, obj) {
 			if (!this._updates[elem.vid])
 				this._updates[elem.vid] = [];
