@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>VirtualDom: Aspect Ratio Example</title>
+<style>
+
+  * {
+    box-sizing: border-box; 
+  }
+
+  div {
+    float: left;
+    background: silver;
+    border: solid 2px white;
+  }
+
+</style>
+</head>
+<body>
+  <label>Number of elements <input id="input" type="text" value="100" /></label>
+  <button id="withoutVirtualDom">Run without VirtualDom</button>
+  <button id="withVirtualDom">Run with VirtualDom</button>
+  <button id="resetbtn">reset</button>
+  <section id="perf"></section>
+  <section id="container"></section>
+  <script type="text/javascript" src="src/VDOM.js"></script>
+  <script type="text/javascript" src="src/HTMLElement.js"></script>
+  <!-- <script type="text/javascript" src="../VDocument.js"></script> -->
+  <script>
+    var n;
+    var start;
+    var divs;
+
+    // Setup
+    function reset() {
+      n = input.value;
+      divs = [];
+      var container =document.getElementById('container');
+      container.innerHTML = '';
+
+      for (var i = 0; i < n; i++) {
+        var div = document.createElement('div');
+        div.style.width = Math.round(Math.random() * window.innerWidth) + 'px';
+        container.appendChild(div);
+        divs.push(div);
+      }
+    }
+    function resetVirtualDom() {
+      n = input.value;
+      divs = [];
+      var c =document.getElementById('container');
+      c.innerHTML = '';
+      var container =vdocument.getElementById('container');
+      container.innerHTML = '';
+
+      for (var i = 0; i < n; i++) {
+        var div = vdocument.createElement('div');
+        div.vstyle("width", Math.round(Math.random() * window.innerWidth) + 'px');
+        container.appendChild(div);
+        divs.push(div);
+      }
+    }
+
+    function setAspect(div, i) {
+      var aspect = 9/16;
+      var isLast = i === (n - 1)
+      var h = div.clientWidth * aspect;
+	
+      div.style.height = h + 'px';
+
+      if (isLast) {
+        displayPerf(new Date().getTime()  - start);
+      }
+    }
+
+    function setAspectVirtualDom(div, i) {
+       var aspect = 9/16;
+      var isLast = i === (n - 1);
+      var elem = document.querySelectorAll("[vid='"+div.vid+"']")[0];
+      var h =  elem.clientWidth * aspect;
+
+      div.vstyle("height" , h + 'px');
+
+      if (isLast) {
+        displayPerf(new Date().getTime() - start);
+      }
+    }
+
+    function displayPerf(ms) {
+      perf.textContent = ms + 'ms';
+    }
+
+    withoutVirtualDom.onclick = function() {
+      reset();
+      setTimeout(function(){
+      start = new Date().getTime() ;
+      divs.forEach(setAspect);      	
+      },100);
+    };
+	function onRender(event){
+		console.log(event);
+		vdocument.removeEventListener('complete',onRender);
+	}
+    withVirtualDom.onclick = function() {
+    	
+    	vdocument.addEventListener('complete',onRender);
+    	
+      resetVirtualDom();
+       setTimeout(function(){
+      start =new Date().getTime() ;
+      divs.forEach(setAspectVirtualDom);
+      },100);
+    };
+
+    resetbtn.onclick = reset;
+  </script>
+</body >
+</html>

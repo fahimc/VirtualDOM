@@ -6,12 +6,12 @@ var vdocument = (function() {
 
     vdocument.prototype = {
         _elemIndex : 0,
+        _delay : 30,
         _dom : null,
         _refreshTimer : null,
         _events : [],
         _updates : [],
         _onLoad : function() {
-            var _this = this;
 
             //add vids
             this._addVids();
@@ -21,11 +21,6 @@ var vdocument = (function() {
             //setup elements
             this._updateElements();
 
-            this._refreshTimer = setInterval(function() {
-                _this._interval();
-            }, 30);
-            
-            
         },
         _addVids : function() {
             var tags = document.getElementsByTagName("*");
@@ -78,7 +73,7 @@ var vdocument = (function() {
                 }
 
                 if (styles.length > 0 && elem) {
-                    var elem_style=elem.style;
+                    var elem_style = elem.style;
                     for (var s = 0; s < styles.length; s++) {
                         elem_style[styles[s].name] = styles[s].value;
 
@@ -86,16 +81,24 @@ var vdocument = (function() {
                 }
                 if (elem && nextSibling && !this.cssAnimation) {
                     parentNode.insertBefore(elem, nextSibling);
-                } else if(elem && !this.cssAnimation){
+                } else if (elem && !this.cssAnimation) {
                     parentNode.appendChild(elem);
                 }
             }
 
             this._updates = [];
-
+            this.clear();
+            document.dispatchEvent(new CustomEvent("complete", {
+                detail : {
+                    message : "Render Complete",
+                    time : new Date(),
+                },
+                bubbles : true,
+                cancelable : true
+            }));
         },
         body : null,
-        cssAnimation:true,
+        cssAnimation : true,
         init : function() {
             var _this = this;
 
@@ -117,17 +120,23 @@ var vdocument = (function() {
 
             return new Element(elem);
         },
-        querySelector:function(value){
+        querySelector : function(value) {
             return this._dom.querySelector(value);
         },
-        querySelectorAll:function(value){
+        querySelectorAll : function(value) {
             return this._dom.querySelectorAll(value);
         },
-        getElementsByName:function(value){
+        getElementsByName : function(value) {
             return this._dom.getElementsByName(value);
         },
-        getElementsByTagNameNS:function(value){
+        getElementsByTagNameNS : function(value) {
             return this._dom.getElementsByTagNameNS(value);
+        },
+        addEventListener : function(type,callback) {
+            return document.addEventListener(type, callback);
+        },
+        removeEventListener : function(type,callback) {
+            return document.removeEventListener(type,callback);
         },
         update : function(elem, type, obj) {
             if (!this._updates[elem.vid])
@@ -138,6 +147,18 @@ var vdocument = (function() {
                 obj : obj
             });
             this._hasUpdate = true;
+            this.start();
+        },
+        clear : function() {
+            clearTimeout(this._refreshTimer);
+            this._refreshTimer = null;
+        },
+        start : function() {
+            if(this._refreshTimer)return;
+            var _this = this;
+            this._refreshTimer = setTimeout(function() {
+                _this._interval();
+            }, this._delay);
         }
     };
 
